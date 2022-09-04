@@ -2,11 +2,24 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+//Importing DB Connection
+const { getDb, connectToServer } = require('./db/connect');
+
 //Importing routes
 const generalRoutes = require('./routes/general.routes');
 const quoteRoutes = require('./routes/quotes.routes');
+const { db } = require('./db/connectUsingMongoose');
 
 const app = express();
+db();
+
+// try{
+//     db.connectToServer(function (err) {
+//         if (err) console.error(err);
+//     })
+// }catch(err){
+//     console.log(err)
+// }
 
 app.use(cors());
 app.use(express.json());

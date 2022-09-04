@@ -1,47 +1,89 @@
 const express = require('express');
 const router = express.Router();
-const quotes = require('../data');
+const Quotes = require('../model/quotes.model');
 
 //To Get all Qoutes
 router.get('/quotes/all', async (req, res) => {
-    await res.status(200).send({
-        quotes: quotes
-    })
+    try{
+        Quotes.find((err, quotes) => {
+            if(err){
+                res.status(400).send({
+                    code: 400,
+                    error: 'Error while getting Quotes'
+                })
+            }
+            if(quotes){
+                res.status(200).send({
+                    quotes: quotes
+                })
+            }
+        })
+    }catch(err){
+        res.status(500).send({
+            error: err
+        })
+    }
 });
 
 
 //To Add a new Qoute
 router.post('/quotes/add', async (req, res) => {
-    const newQuote = req.body;
-    console.log(newQuote);
+    try{
+        let quote = new Quotes(req.body);
+        quote.save((err, data) => {
+            if(err){
+                res.status(400).send({
+                    code: 400,
+                    error: 'Error while adding Quotes'
+                })
+            }
+            if(res){
+                res.status(201).send({quote: data})
+            }
+        })
 
-    await quotes.push(newQuote);
-    console.log('Quotes: ', quotes);
-    await res.status(201).send({
-        message: 'Quote has been published successfully.'
-    })
+    }catch(err){
+        res.status(500).send({
+            error: err
+        })
+    }
 });
 
 //To Edit an exisiting Qoute
 router.put('/quotes/:id/edit', async (req, res) => {
-    const updatedContent = req.body;
-    const index = quotes.findIndex(quote => quote.id === req.params.id);
-    quotes[index] = updatedContent;
-    console.log('Updated Quotes', quotes)
-    await res.send({
-        message: 'Quote has been updated successfully!'
-    })
+    try{
+        Quotes.findOneAndUpdate({_id: req.params.id}, {$set: req.body}, {new: true},
+            (err, quote) => {
+                if(err){
+                    return res.status(400).json({
+                        error: "Error while updating quote"
+                    });
+                }
+    
+                return res.status(201).json(quote);
+            });
+    }catch(err){
+        return res.status(500).send("Internal Server Error")
+    }
 });
 
 //To delete a Qoute
 router.delete('/quotes/:id/delete', (req, res) => {
-    const deleteId = req.params.id;
+    try{
+        Quotes.deleteOne({_id: req.params.id},
+            (err, quote) => {
+                if(err){
+                    return res.status(400).json({
+                        error: "Error while deleting quote"
+                    });
+                }
+    
+                return res.status(200).send("Quote Deleted Successfully...");
 
-    const quotesAfterDeletion = quotes.filter(quote => quote.id !== deleteId);
-    console.log('Quotes after Deletion: ', quotesAfterDeletion);
-    res.send({
-        message: 'Quotes has been deleted successfully.'
-    })
+            });
+    }catch(err){
+        return res.status(500).send("Internal Server Error")
+    }
 });
 
 
