@@ -3,23 +3,15 @@ const express = require('express');
 const cors = require('cors');
 
 //Importing DB Connection
-const { getDb, connectToServer } = require('./db/connect');
+const { db } = require('./db/connectUsingMongoose');
 
 //Importing routes
 const generalRoutes = require('./routes/general.routes');
 const quoteRoutes = require('./routes/quotes.routes');
-const { db } = require('./db/connectUsingMongoose');
+const authRoutes = require('./routes/auth.routes')
 
 const app = express();
 db();
-
-// try{
-//     db.connectToServer(function (err) {
-//         if (err) console.error(err);
-//     })
-// }catch(err){
-//     console.log(err)
-// }
 
 app.use(cors());
 app.use(express.json());
@@ -27,6 +19,7 @@ app.use(express.json());
 //Adding custom middleware
 app.use('/api', generalRoutes);
 app.use('/api', quoteRoutes);
+app.use('/api', authRoutes);
 
 
 const PORT = process.env.PORT || 8080;
