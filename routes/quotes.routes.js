@@ -25,6 +25,29 @@ router.get('/quotes/all', async (req, res) => {
     }
 });
 
+//To Get a quote using ID
+router.get('/quotes/:quoteID', async (req, res) => {
+    try{
+        Quotes.findOne({_id: req.params.quoteID},(err, quote) => {
+            if(err){
+                res.status(400).send({
+                    code: 400,
+                    error: 'Error while getting Quotes'
+                })
+            }
+            if(quote){
+                res.status(200).send({
+                    quote: quote
+                })
+            }
+        })
+    }catch(err){
+        res.status(500).send({
+            error: err
+        })
+    }
+});
+
 
 //To Add a new Qoute
 router.post('/quotes/add', async (req, res) => {
@@ -52,7 +75,7 @@ router.post('/quotes/add', async (req, res) => {
 //To Edit an exisiting Qoute
 router.put('/quotes/:id/edit', async (req, res) => {
     try{
-        Quotes.findOneAndUpdate({_id: req.params.id}, {$set: req.body}, {new: true},
+        Quotes.findOneAndUpdate({_id: req.params.id}, {$set: req.body},
             (err, quote) => {
                 if(err){
                     return res.status(400).json({

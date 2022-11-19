@@ -10,17 +10,36 @@ const Users = require('../model/user.model');
 router.post('/register', async (req, res) => {
     try{
         const payload = req.body;
+        // payload = {
+        //     name: 'Farook',
+        //     email: 'farook@gmail.com',
+        //     password: 'Welcome123',
+        //     mobileNumber: '8756543224567',
+        //     role: 1
+        // }
+        if(!payload.password){
+            return res.status(400).send({message: 'Password required.'})
+        }
         const hashValue = await bcrypt.hash(payload.password, 15);
         payload.hashedPassword = hashValue;
+        
         delete payload.password;
+
+         // payload = {
+        //     name: 'Farook',
+        //     email: 'farook@gmail.com',
+        //     hashedPassword: '@#$@r$%FSfgsgEGrgevwcwdc23$%@$',
+        //     mobileNumber: '8756543224567',
+        //     role: 1
+        // }
 
         let user = new Users(payload);
 
         await user.save((err, data) => {
             if(err){
-                console.log(err.errors.name)
-                if(err.errors.name){
-                        return res.status(400).send({message: `${err.errors.name}` });
+                console.log(err);
+                if(err.errors){
+                        return res.status(400).send({message: `${JSON.stringify(err.errors)}` });
                 }
                 if(err.code === 11000){
                     if(err.keyValue.email){
@@ -30,7 +49,7 @@ router.post('/register', async (req, res) => {
                 return res.status(400).send({message: "User registration failed."});
             }
 
-            res.status(201).send({id : data._id, message: "User registration successfull"})
+            return res.status(201).send({id : data._id, message: "User registration successfull"})
 
         })
 
@@ -42,27 +61,37 @@ router.post('/register', async (req, res) => {
 }) 
 
 router.post('/login', async (req, res) => {
-    try{
-        const payload = req.body; //email and password
+    // 1.User existing or not
+    // 2.User password matching or not
+        // 2.1  -> accessToken genertion while password matching and setting cookie
+        // 2.2 -> error while password not matching
+    //3. Internal Server Error
 
-        const existingUser = await Users.findOne({email: payload.email}) // to check whether user exists or not
+    // JSON Web Token -> JSON value to some random string  -> encrpytion/decrytion
+
+    try{
+        const {email, password} = req.body;
+        const existingUser = await Users.findOne({email: email});
 
         if(existingUser){
-            const isMatching  = await bcrypt.compare(payload.password, existingUser.hashedPassword);
+            const isCredentialsValid = await bcrypt.compare(password, existingUser.hashedPassword); //true or false
 
-            if(isMatching){
-                // jwt -> jsonwebtoken
-                const token = jwt.sign({_id: existingUser._id}, process.env.SECRET_KEY); //Encryption -> method
+            if(isCredentialsValid === true){
+                const token = jwt.sign({_id: existingUser._id}, process.env.SECRET_KEY);
+                res.cookie('accessToken', token, {expire: new Date() + 86400000} );
 
-                res.cookie('entryToken' , token, {expire: new Date() + 9999});
+                const {_id, email} = existingUser;
 
-                return res.status(200).send({token: token, user: {id: existingUser._id, email: existingUser.email}})
+                return res.status(200).send({userId: _id, email: email, accessToken: token})
+
             }
-            
-            return res.status(400).send({message: 'Username/Password are not matching'})
+
+            return res.status(400).send({message: 'Username/Password are not matching.'})
+
         }
 
-        res.status(400).send({message: 'User not found'})
+        return res.status(400).send({message: "User doesn't exist."})
+
 
     }catch(err){
         res.status(500).send({
