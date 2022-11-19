@@ -78,11 +78,11 @@ router.post('/login', async (req, res) => {
 
             if(isCredentialsValid === true){
                 const token = jwt.sign({_id: existingUser._id}, process.env.SECRET_KEY);
-                res.cookie('accessToken', token, {expire: new Date() + 86400000} );
+                res.cookie('accessToken', token, {expire: new Date() + 86400000} ); //cookies for server as well as client
 
                 const {_id, email} = existingUser;
 
-                return res.status(200).send({userId: _id, email: email, accessToken: token})
+                return res.status(200).send({userId: _id, email: email, message: "User logged in successfully."})
 
             }
 
@@ -101,8 +101,14 @@ router.post('/login', async (req, res) => {
 
 })
 
-router.get('/logout', (req, res) => {
+router.get('/logout', async (req, res) => {
+    try{
+        await res.clearCookie('accessToken');
+        return res.status(200).send({ message: 'User logged out successfully.'})
 
+    }catch(err){
+        res.status(500).send({message: 'Internal Server Error'});
+    }
 })
 
 module.exports = router;
