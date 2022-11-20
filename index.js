@@ -10,7 +10,8 @@ const { requireSignIn , isAuth} = require('./utils/authenticationVerify');
 //Importing routes
 const generalRoutes = require('./routes/general.routes');
 const quoteRoutes = require('./routes/quotes.routes');
-const authRoutes = require('./routes/auth.routes')
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
 
 const app = express();
 db();
@@ -22,7 +23,9 @@ app.use(express.json());
 app.use('/api', generalRoutes);
 app.use('/api', authRoutes);
 
-app.use('/api/:userID', requireSignIn, isAuth, quoteRoutes);
+app.use('/api',  quoteRoutes);
+app.use('/api',  userRoutes);
+
 
 
 const PORT = process.env.PORT || 8080;
