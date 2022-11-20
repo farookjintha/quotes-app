@@ -33,13 +33,18 @@ exports.getAllUsers = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try{
-        Users.findByIdAndUpdate({_id: req.params.updateUserID}, {$set: req.body}, (err, data) => {
-            if(err){
-                return res.status(400).send({message: 'Error while updating user.'})
-            }
+        if(req.profile._id === req.params.updateUserID){
+            Users.findByIdAndUpdate({_id: req.params.updateUserID}, {$set: req.body}, (err, data) => {
+                if(err){
+                    return res.status(400).send({message: 'Error while updating user.'})
+                }
+    
+                return res.status(201).send({userID: data._id, message: 'User has been updated successfully'});
+            })
+        }
 
-            res.status(201).send({userID: data._id, message: 'User has been updated successfully'});
-        })
+        res.status(401).send({message: 'Cannot update user details'}) 
+        
     }catch(err){
         res.status(500).send({message: 'Internal Server Error'});
     }

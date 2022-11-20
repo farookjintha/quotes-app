@@ -5,8 +5,6 @@ const cors = require('cors');
 //Importing DB Connection
 const { db } = require('./db/connectUsingMongoose');
 
-const { requireSignIn , isAuth} = require('./utils/authenticationVerify');
-
 //Importing routes
 const generalRoutes = require('./routes/general.routes');
 const quoteRoutes = require('./routes/quotes.routes');

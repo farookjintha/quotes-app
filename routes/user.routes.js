@@ -5,7 +5,7 @@ const { isAdmin } = require('../utils/roleBasedVerification');
 
 const router = express.Router();
 
-router.get('/:userID/users', getAllUsers);
+router.get('/:userID/users', requireSignIn, isAuth, getAllUsers);
 
 router.put('/:userID/users/:updateUserID', requireSignIn, isAuth, updateUser);
 

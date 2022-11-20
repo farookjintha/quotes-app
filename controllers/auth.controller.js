@@ -35,7 +35,6 @@ exports.register = async (req, res) => {
 
         await user.save((err, data) => {
             if(err){
-                console.log(err);
                 if(err.errors){
                         return res.status(400).send({message: `${JSON.stringify(err.errors)}` });
                 }
